@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#04090e" />
+  <meta name="description" content="AETHER — a deterministic procedural space engine. Seamless zoom from galaxy to surface, real exoplanets, stars, nebulae and galaxies." />
+  <title>AETHER — Procedural Space Engine</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/app.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="stage" aria-hidden="true"></div>
+    <div id="markers" aria-hidden="true"></div>
+    <div id="flare" aria-hidden="true">
+      <span class="flare-core"></span>
+      <span class="flare-streak h"></span>
+      <span class="flare-streak v"></span>
+      <span class="flare-ghost g1"></span>
+      <span class="flare-ghost g2"></span>
+      <span class="flare-ghost g3"></span>
+    </div>
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="grain" aria-hidden="true"></div>
+    <div id="warp" aria-hidden="true"></div>
+
+    <div id="hud">
+      <header id="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="8"/><ellipse cx="20" cy="20" rx="18" ry="7" transform="rotate(-28 20 20)"/><circle cx="34" cy="12" r="2.2" class="fill"/></svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">AETHER</div>
+            <div class="brand-sub">PROCEDURAL SPACE ENGINE</div>
+          </div>
+        </div>
+        <div class="scale-block">
+          <div class="scale-labels">
+            <span id="scale-alt-label">GALACTIC ALTITUDE</span>
+            <span id="scale-alt-value">—</span>
+          </div>
+          <div class="scale-bar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="scale-readout"><span id="scale-mode">MILKY WAY</span><b id="scale-value">—</b></div>
+        </div>
+        <div class="top-actions">
+          <div class="telemetry"><span id="fps">60</span> FPS<span class="sep">/</span><span id="quality-chip">MED</span></div>
+          <button class="icon-btn" data-action="settings" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm9 4-2.1-.6a7 7 0 0 0-.7-1.7l1.1-1.9-2.1-2.1-1.9 1.1a7 7 0 0 0-1.7-.7L12.9 3h-3l-.6 2.1a7 7 0 0 0-1.7.7L5.7 4.7 3.6 6.8l1.1 1.9a7 7 0 0 0-.7 1.7L2 11v3l2.1.6a7 7 0 0 0 .7 1.7l-1.1 1.9 2.1 2.1 1.9-1.1a7 7 0 0 0 1.7.7l.6 2.1h3l.6-2.1a7 7 0 0 0 1.7-.7l1.9 1.1 2.1-2.1-1.1-1.9a7 7 0 0 0 .7-1.7L22 14v-3Z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <nav id="breadcrumb" aria-label="Location">
+        <button data-crumb="galaxy">MILKY WAY</button><span>/</span>
+        <button data-crumb="system">KEPLER-22</button><span>/</span>
+        <button data-crumb="planet">KEPLER-22 B</button>
+      </nav>
+
+      <aside id="info-panel" class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker" id="obj-kicker">TARGET // LOCKED</span>
+          <button class="mini-btn" data-action="collapse-info" aria-label="Collapse info">−</button>
+        </div>
+        <div class="obj-class"><span id="obj-class">TEMPERATE OCEAN SUPER-EARTH</span><span id="obj-live" class="live-dot"></span></div>
+        <h1 id="obj-name">Kepler-22 b</h1>
+        <div id="obj-sub" class="obj-sub">Kepler-22 · 638 ly · Cygnus</div>
+        <div id="obj-stats" class="stat-grid"></div>
+        <div class="hab-block">
+          <div class="hab-top"><span>HABITABILITY INDEX</span><b id="hab-value">0.62</b></div>
+          <div class="hab-bar"><i id="hab-fill"></i></div>
+          <div class="hab-label" id="hab-label">PROMISING</div>
+        </div>
+        <p id="obj-desc" class="obj-desc">A 2.4-Earth-radius world in the habitable zone of a Sun-like star.</p>
+        <div id="scan-state" class="scan-state"><span class="scan-led"></span><span id="scan-state-text">UNSCANNED · SIGNAL NOMINAL</span></div>
+        <div class="obj-actions">
+          <button class="action primary" data-action="dive"><span id="dive-label">DIVE</span><svg viewBox="0 0 24 24"><path d="M12 4v12m0 0-4-4m4 4 4-4M5 20h14"/></svg></button>
+          <button class="action" data-action="scan">SCAN</button>
+          <button class="action" data-action="dossier">DOSSIER</button>
+          <button class="action square" data-action="bookmark" title="Bookmark" aria-label="Bookmark">☆</button>
+        </div>
+      </aside>
+
+      <aside id="nav-panel" class="panel">
+        <div class="panel-head">
+          <span class="panel-kicker">NAVIGATION</span>
+          <button class="mini-btn" data-action="close-nav" aria-label="Close navigation">×</button>
+        </div>
+        <div class="nav-tabs">
+          <button class="active" data-tab="catalog">CATALOG</button>
+          <button data-tab="bookmarks">BOOKMARKS</button>
+          <button data-tab="log">LOG <span id="log-count">0</span></button>
+        </div>
+        <div class="nav-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+          <input id="nav-filter" type="search" placeholder="Filter objects…" autocomplete="off" spellcheck="false" />
+        </div>
+        <div id="nav-list" class="nav-list"></div>
+        <div class="seed-block">
+          <div class="seed-head"><span>UNIVERSE SEED</span><button data-action="copy-seed">SHARE</button></div>
+          <div class="seed-row">
+            <input id="seed-input" value="AETHER-7F2A" maxlength="24" spellcheck="false" aria-label="Universe seed" />
+            <button class="mini-btn" data-action="apply-seed" title="Generate">GO</button>
+          </div>
+          <div class="seed-foot"><button data-action="new-seed">↻ NEW SEED</button><span id="seed-hash">DETERMINISTIC</span></div>
+        </div>
+      </aside>
+
+      <div id="toolbar" role="toolbar" aria-label="Controls">
+        <div class="tool-group">
+          <button class="tool" data-action="zoom-out" title="Zoom out" aria-label="Zoom out">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M8 11h6m-3-3v6M16.5 16.5 21 21"/></svg>
+          </button>
+          <button class="tool" data-action="zoom-in" title="Zoom in" aria-label="Zoom in">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M16.5 16.5 21 21"/></svg>
+          </button>
+        </div>
+        <div class="tool-group">
+          <button class="tool warp" data-action="warp" title="Time warp">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>
+            <span id="warp-label">×1</span>
+          </button>
+          <button class="tool" data-action="autopilot" title="Autopilot" aria-label="Autopilot">
+            <svg viewBox="0 0 24 24"><path d="m12 3 3 7 6 2-6 2-3 7-3-7-6-2 6-2 3-7Z"/></svg>
+          </button>
+          <button class="tool" data-action="scan" title="Scan object" aria-label="Scan object">
+            <svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5M8 12h8"/></svg>
+          </button>
+        </div>
+        <div class="tool-group">
+          <button class="tool" data-action="search" title="Search" aria-label="Search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></svg>
+          </button>
+          <button class="tool" data-action="photo" title="Photo mode" aria-label="Photo mode">
+            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+          </button>
+          <button class="tool nav-toggle" data-action="toggle-nav" title="Navigation" aria-label="Navigation">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <button class="tool" data-action="achievements" title="Achievements" aria-label="Achievements">
+            <svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4M12 13v5m-4 3h8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="toast-stack" aria-live="polite"></div>
+      <div id="discovery-ticker" class="ticker" aria-hidden="true"></div>
+    </div>
+
+    <div id="search-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Search">
+      <div class="search-box">
+        <div class="search-head">
+          <span class="panel-kicker">UNIVERSAL SEARCH // REAL OBJECTS &amp; SEEDS</span>
+          <button class="mini-btn" data-action="close-search" aria-label="Close search">×</button>
+        </div>
+        <div class="search-input-row">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></svg>
+          <input id="search-input" type="search" placeholder="Kepler-22 b, TRAPPIST-1e, Sirius, M42…" autocomplete="off" spellcheck="false" />
+        </div>
+        <div id="search-quick" class="quick-chips"></div>
+        <div id="search-results" class="search-results"></div>
+        <div class="search-foot"><span>↑↓ BROWSE</span><span>ENTER TO TRAVEL</span><span>ESC TO CLOSE</span></div>
+      </div>
+    </div>
+
+    <div id="modal-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Details">
+      <div id="modal" class="modal">
+        <button class="mini-btn modal-close" data-action="close-modal" aria-label="Close">×</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
+    <div id="scan-overlay" class="scan-overlay" aria-hidden="true">
+      <div class="scan-card">
+        <div class="scan-ring" id="scan-ring"><span id="scan-pct">0%</span></div>
+        <div class="scan-copy">
+          <div class="scan-title">SPECTRAL ANALYSIS</div>
+          <div class="scan-target" id="scan-target">—</div>
+          <div class="scan-log" id="scan-log">ACQUIRING SIGNAL…</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="photo-bar">
+      <span>PHOTO MODE // HUD HIDDEN</span>
+      <div>
+        <button class="action" data-action="capture">CAPTURE FRAME</button>
+        <button class="action" data-action="exit-photo">EXIT</button>
+      </div>
+    </div>
+
+    <div id="fade"></div>
+
+    <div id="boot">
+      <div class="boot-inner">
+        <div class="boot-mark">AETHER</div>
+        <div class="boot-sub">PROCEDURAL SPACE ENGINE</div>
+        <div class="boot-line"><span></span></div>
+        <div class="boot-meta"><span>SEED <b id="boot-seed">AETHER-7F2A</b></span><span>BUILDING LOCAL BUBBLE</span></div>
+      </div>
+    </div>
+
+    <noscript><div class="noscript">AETHER needs JavaScript and WebGL to render the universe.</div></noscript>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

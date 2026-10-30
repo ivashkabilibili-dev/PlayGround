@@ -1,0 +1,19 @@
+{
+  "name": "AETHER — Procedural Space Engine",
+  "short_name": "AETHER",
+  "description": "A deterministic procedural space engine. Seamless zoom from galaxy to surface, real exoplanets, stars, nebulae and galaxies.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#04090e",
+  "theme_color": "#04090e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
